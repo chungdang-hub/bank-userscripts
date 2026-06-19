@@ -4,8 +4,8 @@
 // @version      11.7
 // @description  Hỗ trợ đa tài khoản công ty & Tối ưu hiệu năng DOM
 // @author       NGOCCHUNG
-// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/edit/main/Báo%20Nợ%20VPbank-11.7.user.js
-// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/edit/main/Báo%20Nợ%20VPbank-11.7.user.js
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-VPbank.user.js
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-VPbank.user.js
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
 // @run-at       document-start
