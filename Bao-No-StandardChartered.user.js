@@ -4,8 +4,8 @@
 // @version      13.2
 // @author       NGOCCHUNG
 // @match        *://farmlink.techcoop.vn/*
-// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/edit/main/Báo%20Nợ%20Standard%20Chartered-13.2.user.js
-// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/edit/main/Báo%20Nợ%20Standard%20Chartered-13.2.user.js
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-StandardChartered.user.js
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-StandardChartered.user.js
 // @grant        none
 // @run-at       document-start
 // ==/UserScript==
