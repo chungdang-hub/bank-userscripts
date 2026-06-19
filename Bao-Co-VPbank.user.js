@@ -3,8 +3,8 @@
 // @namespace    http://tampermonkey.net/
 // @version      11.1
 // @description  Thuật toán bốc ô Diễn giải vạn năng, cắt chuỗi sạch sẽ, lọc sạch rác hệ thống VPBank, hỗ trợ đa tài khoản
-// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/edit/main/Báo%20Có%20VPbank-11.1.user.js
-// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/edit/main/Báo%20Có%20VPbank-11.1.user.js
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-Co-VPbank.user.js
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-Co-VPbank.user.js
 // @author       NGOCCHUNG
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
