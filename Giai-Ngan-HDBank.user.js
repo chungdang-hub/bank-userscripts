@@ -3,8 +3,8 @@
 // @namespace    http://tampermonkey.net/
 // @version      12.3
 // @author       NGOCCHUNG
-// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/edit/main/Giải%20Ngân%20HDBank-12.3.user.js
-// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/edit/main/Giải%20Ngân%20HDBank-12.3.user.js
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Giai-Ngan-HDBank.user.js
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Giai-Ngan-HDBank.user.js
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
 // @run-at       document-start
