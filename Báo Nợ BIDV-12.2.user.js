@@ -5,6 +5,8 @@
 // @description  Thuật toán bốc ô Diễn giải phẳng, loại bỏ hoàn toàn lỗi xuống dòng của BIDV PDF
 // @author       NGOCCHUNG
 // @match        *://farmlink.techcoop.vn/*
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/B%C3%A1o%20N%E1%BB%A3%20BIDV-12.2.user.js
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/B%C3%A1o%20N%E1%BB%A3%20BIDV-12.2.user.js
 // @grant        none
 // @run-at       document-start
 // ==/UserScript==
