@@ -3,8 +3,8 @@
 // @namespace    http://tampermonkey.net/
 // @version      12.2
 // @description  Thuật toán bốc ô Diễn giải phẳng, loại bỏ hoàn toàn lỗi xuống dòng của BIDV PDF
-// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Báo%20Có%20BIDV-12.2.user.js
-// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Báo%20Có%20BIDV-12.2.user.js
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-Co-BIDV.user.js
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-Co-BIDV.user.js
 // @author       NGOCCHUNG
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
