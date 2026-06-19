@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HDBank 
 // @namespace    http://tampermonkey.net
-// @version      9.9.2
+// @version      9.9
 // @description  Sửa lỗi nhận diện mã Ref và chuẩn hóa loại bỏ nhãn "Details of Payment" thừa trong ô Ghi chú.
 // @author       NGOCCHUNG
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/blob/main/HDBank-9.9.2.user.js
