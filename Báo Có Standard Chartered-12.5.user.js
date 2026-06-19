@@ -3,6 +3,8 @@
 // @namespace    http://tampermonkey.net/
 // @version      12.5
 // @description  Tuyệt chiêu nén chuỗi, bắt chính xác tuyệt đối Amount 190 triệu
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/edit/main/Báo%20Có%20Standard%20Chartered-12.5.user.js
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/edit/main/Báo%20Có%20Standard%20Chartered-12.5.user.js
 // @author       NGOCCHUNG
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
