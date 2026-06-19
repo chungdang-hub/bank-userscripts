@@ -4,8 +4,8 @@
 // @version      9.8
 // @description  Tối ưu hóa hiệu năng, sửa lỗi vòng lặp DOM và nâng cấp độ chính xác quét dữ liệu VietinBank điền vào Odoo.
 // @author       NGOCCHUNG
-// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/edit/main/Viettin%20Bank-9.8.user.js
-// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/edit/main/Viettin%20Bank-9.8.user.js
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Viettin-Bank.user.js
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Viettin-Bank.user.js
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
 // @run-at       document-start
