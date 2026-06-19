@@ -4,8 +4,8 @@
 // @version      9.9
 // @description  Sửa lỗi nhận diện mã Ref và chuẩn hóa loại bỏ nhãn "Details of Payment" thừa trong ô Ghi chú.
 // @author       NGOCCHUNG
-// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/blob/main/HDBank-9.9.2.user.js
-// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/blob/main/HDBank-9.9.2.user.js
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/raw/refs/heads/main/HDBank-9.9.2.user.js
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/raw/refs/heads/main/HDBank-9.9.2.user.js
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
 // @run-at       document-start
