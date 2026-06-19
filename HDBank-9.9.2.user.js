@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         HDBank 
+// @name         HD Bank 
 // @namespace    http://tampermonkey.net
 // @version      9.9
 // @description  Sửa lỗi nhận diện mã Ref và chuẩn hóa loại bỏ nhãn "Details of Payment" thừa trong ô Ghi chú.
