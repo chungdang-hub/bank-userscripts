@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Báo Có Standard Chartered
 // @namespace    http://tampermonkey.net/
-// @version      12.5
+// @version      12.6
 // @description  Tuyệt chiêu nén chuỗi, bắt chính xác tuyệt đối Amount 190 triệu
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-Co-StandardChartered.user.js
 // @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-Co-StandardChartered.user.js
@@ -114,7 +114,7 @@
         } catch (e) { return false; }
     }
 
-   // 4. BỘ PHÂN TÍCH CHUỖI
+    // 4. BỘ PHÂN TÍCH CHUỖI
     function trichXuatDuLieuStandardChartered(vanBan) {
         let ketQua = { ngay: '', soTien: '', ref: '', fromAccount: '', toAccount: '', detail: '' };
 
@@ -126,20 +126,20 @@
         )];
 
         if (dsNgay.length > 0) {
-    const mNgay = dsNgay[dsNgay.length - 1];
+            const mNgay = dsNgay[dsNgay.length - 1];
 
-    const cacThang = {
-        JAN: "01", FEB: "02", MAR: "03", APR: "04",
-        MAY: "05", JUN: "06", JUL: "07", AUG: "08",
-        SEP: "09", OCT: "10", NOV: "11", DEC: "12"
-    };
+            const cacThang = {
+                JAN: "01", FEB: "02", MAR: "03", APR: "04",
+                MAY: "05", JUN: "06", JUL: "07", AUG: "08",
+                SEP: "09", OCT: "10", NOV: "11", DEC: "12"
+            };
 
-    const ngay = mNgay[1];
-    const thang = cacThang[mNgay[2].toUpperCase()];
-    const nam = mNgay[3].length === 2 ? "20" + mNgay[3] : mNgay[3];
+            const ngay = mNgay[1];
+            const thang = cacThang[mNgay[2].toUpperCase()];
+            const nam = mNgay[3].length === 2 ? "20" + mNgay[3] : mNgay[3];
 
-    ketQua.ngay = `${ngay}/${thang}/${nam}`;
-}
+            ketQua.ngay = `${ngay}/${thang}/${nam}`;
+        }
 
         // [2] QUÉT SỐ TIỀN
 
