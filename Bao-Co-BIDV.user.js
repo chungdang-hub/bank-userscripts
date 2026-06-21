@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Báo Có BIDV
 // @namespace    http://tampermonkey.net/
-// @version      12.2
+// @version      12.3
 // @description  Thuật toán bốc ô Diễn giải phẳng, loại bỏ hoàn toàn lỗi xuống dòng của BIDV PDF
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-Co-BIDV.user.js
 // @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-Co-BIDV.user.js
