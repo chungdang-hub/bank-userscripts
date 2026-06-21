@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Báo Nợ Standard Chartered
 // @namespace    http://tampermonkey.net/
-// @version      13.2
+// @version      13.3
 // @author       NGOCCHUNG
 // @match        *://farmlink.techcoop.vn/*
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-StandardChartered.user.js
@@ -118,17 +118,26 @@
     function trichXuatBaoNoStandardChartered(vanBan) {
         let ketQua = { ngay: '', soTien: '', ref: '', fromAccount: '', toAccount: '', detail: '' };
 
-        // Xóa dấu ngoặc kép và làm sạch khoảng trắng
         let textSach = vanBan.replace(/"/g, '');
-        const textChuan = textSach.replace(/\s+/g, ' ');
 
-        // [1] QUÉT NGÀY (Value Date)
-        const mNgay = textChuan.match(/(\d{2})-([A-Za-z]{3})-(\d{2,4})/i);
-        if (mNgay) {
-            const cacThang = { JAN: "01", FEB: "02", MAR: "03", APR: "04", MAY: "05", JUN: "06", JUL: "07", AUG: "08", SEP: "09", OCT: "10", NOV: "11", DEC: "12" };
+        const textChuan = textSach.replace(/\s+/g, ' ');
+        const dsNgay = [...textChuan.matchAll(
+            /(\d{2})-([A-Za-z]{3})-(\d{2,4})/g
+        )];
+
+        if (dsNgay.length > 0) {
+            const mNgay = dsNgay[dsNgay.length - 1];
+
+            const cacThang = {
+                JAN: "01", FEB: "02", MAR: "03", APR: "04",
+                MAY: "05", JUN: "06", JUL: "07", AUG: "08",
+                SEP: "09", OCT: "10", NOV: "11", DEC: "12"
+            };
+
             const ngay = mNgay[1];
             const thang = cacThang[mNgay[2].toUpperCase()];
             const nam = mNgay[3].length === 2 ? "20" + mNgay[3] : mNgay[3];
+
             ketQua.ngay = `${ngay}/${thang}/${nam}`;
         }
 
