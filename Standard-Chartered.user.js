@@ -261,7 +261,7 @@
 
         container.innerHTML = `
             <div style="font-weight: bold; color: #ff9e64; font-size: 13px; margin-bottom: 6px; text-align: center; border-bottom: 1px solid #444b6a; padding-bottom: 4px;">
-                🦊 SCBANK AUTOFILL (ALL-IN-ONE)
+                🦊 SCBANK AUTOFILL
             </div>
             <div id="v9-status" style="font-size: 11px; color: #9ece6a; font-weight: bold; margin-bottom: 10px; text-align: center;">
                 ● Sẵn sàng nhận diện file
@@ -272,7 +272,7 @@
             </button>
 
             <button id="v9-btn-file" style="width: 100%; background: #ff9e64; color: #1a1b26; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">
-                📁 CHỌN FILE (NỢ HOẶC CÓ)
+                📁 CHỌN FILE SC
             </button>
             <input type="file" id="v9-file-input" accept="application/pdf" style="display: none;" />
 
