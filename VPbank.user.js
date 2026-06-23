@@ -4,8 +4,8 @@
 // @version      12.0
 // @description  Tự động nhận diện và xử lý cả phôi Báo Nợ & Báo Có VPBank, tối ưu hóa DOM Odoo
 // @author       NGOCCHUNG
-// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/blob/main/VPbank.user.js
-// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/blob/main/VPbank.user.js
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/VPbank.user.js
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/VPbank.user.js
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
 // @run-at       document-start
