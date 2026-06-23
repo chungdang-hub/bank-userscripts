@@ -3,8 +3,8 @@
 // @namespace    http://tampermonkey.net/
 // @version      13.1
 // @author       NGOCCHUNG
-// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-Co-BIDV.user.js
-// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-Co-BIDV.user.js
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/BIDV.user.js
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/BIDV.user.js
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
 // @run-at       document-start
