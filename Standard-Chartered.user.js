@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Standard Chartered
 // @namespace    http://tampermonkey.net/
-// @version      14.0
+// @version      14.1
 // @author       NGOCCHUNG
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Standard-Chartered.user.js
 // @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Standard-Chartered.user.js
