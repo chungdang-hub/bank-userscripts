@@ -2,7 +2,6 @@
 // @name         Báo Nợ HSBC
 // @namespace    http://tampermonkey.net/
 // @version      19.3
-// @description  Hỗ trợ đa định dạng HSBC (Báo Nợ): Tích hợp luồng xử lý song song cho cả Ủy nhiệm chi tiêu chuẩn & Giải ngân Tài trợ thương mại (Trade Loan)
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-HSBC.user.js
 // @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-HSBC.user.js
 // @author       NGOCCHUNG
