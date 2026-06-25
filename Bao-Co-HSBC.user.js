@@ -2,7 +2,6 @@
 // @name         Báo Có HSBC
 // @namespace    http://tampermonkey.net/
 // @version      19.0
-// @description  Hỗ trợ đa định dạng HSBC: Bộ lọc tối thượng chặn đứng và xóa bỏ hoàn toàn rác hệ thống dính vào Detail
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-Co-HSBC.user.js
 // @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-Co-HSBC.user.js
 // @author       NGOCCHUNG
