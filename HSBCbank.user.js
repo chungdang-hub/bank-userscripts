@@ -2,8 +2,8 @@
 // @name         HSBC
 // @namespace    http://tampermonkey.net/
 // @version      20.0
-// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-Co-HSBC-Combined.user.js
-// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-Co-HSBC-Combined.user.js
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/HSBCbank.user.js
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/HSBCbank.user.js
 // @author       NGOCCHUNG & Gemini Collaborator
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
