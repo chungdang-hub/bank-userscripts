@@ -4,7 +4,7 @@
 // @version      20.0
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/HSBCbank.user.js
 // @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/HSBCbank.user.js
-// @author       NGOCCHUNG & Gemini Collaborator
+// @author       NGOCCHUNG
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
 // @run-at       document-start
