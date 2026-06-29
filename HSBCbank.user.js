@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         HSBC
 // @namespace    http://tampermonkey.net/
-// @version      20.0
+// @version      20.1
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/HSBCbank.user.js
 // @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/HSBCbank.user.js
 // @author       NGOCCHUNG
+//@description   Phiên bản update 
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
 // @run-at       document-start
@@ -119,27 +120,26 @@
         } catch (e) { return false; }
     }
 
-    // 4. BỘ PHÂN TÍCH NÂNG CẤP THÔNG MINH
+    // 4. BỘ PHÂN TÍCH NÂNG CẤP THÔNG MINH (HỖ TRỢ SONG NGỮ & SỬA LỖI LẤY SAI NGÀY)
     function boPhanTichTongHopHSBC(vanBanRaw) {
         let textChuan = vanBanRaw.replace(/"\s*,\s*"/g, ' ');
         textChuan = textChuan.replace(/["\r\n]+/g, ' ');
         textChuan = textChuan.replace(/\s+/g, ' ').trim();
 
-        // THUẬT TOÁN ĐÁNH GIÁ SÂU: Phân biệt luồng Báo Nợ / Báo Có dựa trên ví trí dữ liệu thực tế
+        // THUẬT TOÁN ĐÁNH GIÁ SÂU: Phân biệt luồng Báo Nợ / Báo Có đa ngữ
         let laBaoCo = false;
-        if (/ID người khởi tạo/i.test(textChuan)) {
+        if (/(ID người khởi tạo|Originator ID)/i.test(textChuan)) {
             laBaoCo = true;
-        } else if (/Số tiền ghi có\s*VND\s*[\d,.]+/i.test(textChuan)) {
+        } else if (/(?:Số tiền ghi có|Amount credited)[\s\S]{0,15}VND\s*[\d,.]+|VND\s*[\d,.]+[\s\S]{0,15}(?:Số tiền ghi có|Amount credited)/i.test(textChuan)) {
             laBaoCo = true;
-        } else if (/Chi tiết ghi nợ/i.test(textChuan) && /Chi tiết ghi có/i.test(textChuan)) {
-            // Nếu tệp chứa cả hai nhãn, kiểm tra xem phân đoạn "Ghi nợ" có chứa tiền thật không
-            let doanGhiNo = textChuan.match(/Chi tiết ghi nợ([\s\S]*?)Chi tiết ghi có/i);
-            if (doanGhiNo && /VND\s*[\d,.]+/i.test(doanGhiNo[1]) && !/Số tiền ròng Không có sẵn/i.test(doanGhiNo[1])) {
-                laBaoCo = false; // Phân đoạn ghi nợ có tiền -> Đích thị là Báo Nợ
+        } else if (/(Chi tiết ghi nợ|Debit details)/i.test(textChuan) && /(Chi tiết ghi có|Credit details)/i.test(textChuan)) {
+            let doanGhiNo = textChuan.match(/(?:Chi tiết ghi nợ|Debit details)([\s\S]*?)(?:Chi tiết ghi có|Credit details)/i);
+            if (doanGhiNo && /VND\s*[\d,.]+/i.test(doanGhiNo[1]) && !/(?:Số tiền ròng Không có sẵn|Net amount Not Available)/i.test(doanGhiNo[1])) {
+                laBaoCo = false;
             } else {
                 laBaoCo = true;
             }
-        } else if (/Chi tiết ghi có/i.test(textChuan) && !/Chi tiết ghi nợ/i.test(textChuan)) {
+        } else if (/(Chi tiết ghi có|Credit details)/i.test(textChuan) && !/(Chi tiết ghi nợ|Debit details)/i.test(textChuan)) {
             laBaoCo = true;
         }
 
@@ -155,81 +155,102 @@
             detail: ''
         };
 
-        // --- TRÍCH XUẤT NGÀY GIAO DỊCH ---
-        const mNgay = textChuan.match(/(?:Ngày hiệu lực|Thông tin chi tiết vào)\s+(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{4})/i);
+        // --- TRÍCH XUẤT NGÀY GIAO DỊCH (V3 - CHỐNG LỖI MẤT KHOẢNG TRẮNG CỦA PDF.JS) ---
+        let mNgay = textChuan.match(/(?:Thông tin|Details)[\s\S]{0,20}?(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{4})/i);
+
+        if (!mNgay) {
+            // Thử bắt ngày ở dưới chân trang (ví dụ: "09 May 2026 Account number" hoặc "Page 1")
+            mNgay = textChuan.match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{4})[\s\S]{0,20}?(?:Account|Số tài khoản|Page|Trang)/i);
+        }
+
+        if (!mNgay) {
+            // Cứu cánh 3: Value date / Ngày hiệu lực
+            mNgay = textChuan.match(/(?:hiệu lực|Value)[\s\S]{0,20}?(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{4})/i);
+        }
+
+        if (!mNgay) {
+            // Cứu cánh cuối cùng: Quét lấy ngày bất kỳ đầu tiên xuất hiện trong file (thường nằm ở top trang)
+            mNgay = textChuan.match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{4})/i);
+        }
+
         if (mNgay) {
             const months = { jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06', jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12' };
             let day = mNgay[1].padStart(2, '0');
-            let mon = months[mNgay[2].toLowerCase()];
-            ketQua.ngay = `${day}/${mon}/${mNgay[3]}`;
+            let mon = mNgay[2].toLowerCase();
+            let year = mNgay[3];
+            ketQua.ngay = `${day}/${months[mon]}/${year}`;
         }
 
         // --- TRÍCH XUẤT MÃ REF ---
-        const mRef = textChuan.match(/Mã tham chiếu ngân(?: hàng)?\s+([A-Z0-9_-\s]{4,25}?)(?=\s+Mã tham chiếu|\s+Chú giải|\s+Chủ giải|\s+Loại tiền tệ|\s+Chi tiết|$)/i) ||
-                     textChuan.match(/Mã tham chiếu khách hàng\s+([A-Z0-9_-\s]{4,25}?)(?=\s+Mã tham chiếu|\s+Chú giải|\s+Chủ giải|\s+Loại tiền tệ|\s+Chi tiết|$)/i) ||
-                     textChuan.match(/Mã tham chiếu xuyên suốt\s+([A-Z0-9_-]+)/i);
+        const mRef = textChuan.match(/(?:Mã tham chiếu ngân(?: hàng)?|Bank reference)\s+([A-Z0-9_-\s]{4,25}?)(?=\s+(?:Mã tham chiếu|Chú giải|Chủ giải|Loại tiền tệ|Chi tiết|Additional|Beneficiary|$))/i) ||
+                     textChuan.match(/(?:Mã tham chiếu khách hàng|Customer|End-to-\s*end reference)\s+([A-Z0-9_-\s]{4,25}?)(?=\s+(?:Mã tham|Chú|Loại|Chi tiết|Not Available|Amount|$))/i) ||
+                     textChuan.match(/(?:Mã tham chiếu xuyên suốt|End-to-end reference)\s+([A-Z0-9_-]+)/i);
         if (mRef) ketQua.ref = mRef[1].trim();
 
         // --- XỬ LÝ LOGIC THEO LUỒNG ĐÃ ĐỊNH DANH ---
         if (laBaoCo) {
             // LOẠI GIAO DỊCH: BÁO CÓ
-            const mSoTienCo = textChuan.match(/(?:Số tiền ghi có|Số tiền tổng)\s*VND\s*([\d,.]+)/i);
-            if (mSoTienCo) ketQua.soTien = mSoTienCo[1].trim().replace(/\.00$/, '');
+            const mSoTienCo = textChuan.match(/(?:Số tiền ghi có|Số tiền tổng|Amount credited)\s*VND\s*([\d,.]+)|VND\s*([\d,.]+)\s*(?:Amount credited)/i);
+            if (mSoTienCo) ketQua.soTien = (mSoTienCo[1] || mSoTienCo[2]).trim().replace(/\.00$/, '');
 
-            const mFromAccCo = textChuan.match(/ID người khởi tạo\s*(\d+)/i);
+            const mFromAccCo = textChuan.match(/(?:ID người khởi tạo|Originator ID)\s*(\d+)/i);
             if (mFromAccCo) ketQua.fromAccount = mFromAccCo[1].trim();
 
-            const mDetailCo = textChuan.match(/Chú giải bổ sung\s+([\s\S]*?)(?=Chi tiết ghi nợ|Tên người thụ hưởng|Tài khoản|Chi tiết ghi có)/i);
-            if (mDetailCo) {
-                let tamDetail = mDetailCo[1].trim();
-                tamDetail = tamDetail.replace(/(Mã tham chiếu khách hàng|Ngày ra lệnh thanh toán|Loại tiền tệ\s*\/\s*Số tiền được chỉ thị|Phí\s*VND|Tỉ giá hối đoái được chỉ thị|Mã tham chiếu ngân hàng|Mã tham chiếu liên quan)[\s\S]*/i, '');
+            const mPaymentDetail = textChuan.match(/(?:Payment details|Chi tiết thanh toán)\s+([\s\S]*?)(?=Purpose of transfer|Tên người thụ hưởng|Tài khoản|Mã tham chiếu|Ngày hiệu lực|$)/i);
+            const mDetailCo = textChuan.match(/(?:Chú giải bổ sung|Additional narrative)\s+([\s\S]*?)(?=Chi tiết ghi nợ|Tên người thụ hưởng|Tài khoản|Chi tiết ghi có|NOTPROVIDED|Beneficiary|$)/i);
+
+            let tamDetail = "";
+            if (mPaymentDetail && mPaymentDetail[1].trim().length > 5) {
+                tamDetail = mPaymentDetail[1].trim();
+            } else if (mDetailCo) {
+                tamDetail = mDetailCo[1].trim();
+            }
+
+            if (tamDetail) {
+                tamDetail = tamDetail.replace(/(Mã tham chiếu khách hàng|Ngày ra lệnh thanh toán|Loại tiền tệ\s*\/\s*Số tiền được chỉ thị|Phí\s*VND|Tỉ giá hối đoái được chỉ thị|Mã tham chiếu ngân hàng|Mã tham chiếu liên quan|OBK\/)[\s\S]*/i, '');
                 ketQua.detail = tamDetail.trim();
             }
         } else {
             // LOẠI GIAO DỊCH: BÁO NỢ
-            // Ưu tiên 1: Lấy số tiền thực trả tại bảng thanh toán phí riêng
-            const mSoTienThanhToan = textChuan.match(/Loại tiền tệ thanh toán\s*VND\s*Số tiền\s*([\d,.]+)/i);
+            const mSoTienThanhToan = textChuan.match(/(?:Loại tiền tệ thanh toán|Payment currency)\s*VND\s*(?:Số tiền|Amount)\s*([\d,.]+)/i);
             if (mSoTienThanhToan) {
                 ketQua.soTien = mSoTienThanhToan[1].trim().replace(/\.00$/, '');
             } else {
-                // Ưu tiên 2: Quét số tiền ròng nợ cơ bản
-                const mSoTienNo = textChuan.match(/(?:Số tiền ròng|Số tiền ghi nợ|Số tiền đã ghi nợ|Số tiền thanh toán)\s*(?::\s*)?(?:VND)?\s*(-?\s*[\d,.]+)/i) ||
-                                 textChuan.match(/VND\s*-\s*([\d,.]+)/i);
+                const mSoTienNo = textChuan.match(/(?:Số tiền ròng|Số tiền ghi nợ|Số tiền đã ghi nợ|Số tiền thanh toán|Net amount|Amount debited)\s*(?::\s*)?(?:VND)?\s*(-?\s*[\d,.]+)/i) ||
+                                  textChuan.match(/VND\s*-\s*([\d,.]+)/i);
                 if (mSoTienNo) {
-                    let chuoiTien = mSoTienNo[1].replace(/-/g, '').trim();
+                    let chuoiTien = (mSoTienNo[1] || mSoTienNo[2]).replace(/-/g, '').trim();
                     ketQua.soTien = chuoiTien.replace(/\.00$/, '');
                 }
             }
 
-            const mFromAccNo = textChuan.match(/Số tài khoản\s+([\d-]+)/i);
+            const mFromAccNo = textChuan.match(/(?:Số tài khoản|Account number)\s+([\d-]+)/i);
             if (mFromAccNo) ketQua.fromAccount = mFromAccNo[1].replace(/-/g, '').trim();
 
-            const mToAccNo = textChuan.match(/(?:Tài khoản thụ hưởng|Tài khoản với ngân hàng)\s*[:\-#]?\s*([0-9]{8,16})/i);
+            const mToAccNo = textChuan.match(/(?:Tài khoản thụ hưởng|Tài khoản với ngân hàng|Beneficiary account)\s*[:\-#]?\s*([0-9]{8,16})/i);
             if (mToAccNo) ketQua.toAccount = mToAccNo[1].trim();
 
-            // Trích xuất cân bằng nội dung chi tiết/chủ giải
             let chitietNo = "";
-            const mCTNo = textChuan.match(/Chi tiết thanh toán\s+([\s\S]*?)(?=Tên người thụ hưởng|Tài khoản thụ hưởng|Mã tham chiếu|Ngày hiệu lực|Thông tin giữa|$)/i);
-            if (mCTNo && !mCTNo[1].includes("Không có sẵn")) {
-                chitietNo = mCTNo[1].replace(/(?:Địa chỉ|VIETNAM JSC|Tên|Ngân hàng)[\s\S]*/gi, '').trim();
+            const mCTNo = textChuan.match(/(?:Chi tiết thanh toán|Payment details)\s+([\s\S]*?)(?=Tên người thụ hưởng|Tài khoản thụ hưởng|Mã tham chiếu|Ngày hiệu lực|Thông tin giữa|Beneficiary|Purpose of transfer|$)/i);
+            if (mCTNo && !mCTNo[1].includes("Không có sẵn") && !mCTNo[1].includes("Not Available")) {
+                chitietNo = mCTNo[1].replace(/(?:Địa chỉ|VIETNAM JSC|Tên|Ngân hàng|Address|Bank)[\s\S]*/gi, '').trim();
             }
 
             let chugiaiNo = "";
-            const mCGNo = textChuan.match(/(?:Chú giải bổ sung|Chủ giải bổ sung)\s+([\s\S]*?)(?=Mã tham chiếu|Chi tiết thanh toán|Tên người thụ hưởng|Chi tiết ghi nợ|$)/i);
+            const mCGNo = textChuan.match(/(?:Chú giải bổ sung|Chủ giải bổ sung|Additional narrative)\s+([\s\S]*?)(?=Mã tham chiếu|Chi tiết thanh toán|Tên người thụ hưởng|Chi tiết ghi nợ|Beneficiary|Debit details|$)/i);
             if (mCGNo) chugiaiNo = mCGNo[1].trim();
 
             let detailChuanNo = (chitietNo.length > 15) ? chitietNo : chugiaiNo;
             if (!detailChuanNo) detailChuanNo = chugiaiNo || chitietNo;
 
             if (detailChuanNo) {
-                detailChuanNo = detailChuanNo.replace(/(?:Tên người thụ hưởng|Tài khoản thụ hưởng|Số tiền đã trả|Số tiền đã ghi nợ|Tỷ giá hối đoái|Ngày hiệu lực|Thông tin giữa các ngân hàng)[\s\S]*/gi, '');
+                detailChuanNo = detailChuanNo.replace(/(?:Tên người thụ hưởng|Tài khoản thụ hưởng|Số tiền đã trả|Số tiền đã ghi nợ|Tỷ giá hối đoái|Ngày hiệu lực|Thông tin giữa các ngân hàng|Beneficiary|Exchange rate)[\s\S]*/gi, '');
                 ketQua.detail = detailChuanNo.trim();
             }
         }
 
         return ketQua;
     }
-
     // 5. ĐỌC FILE PDF
     async function xuLyDocFilePDF(file) {
         return new Promise((resolve, reject) => {
