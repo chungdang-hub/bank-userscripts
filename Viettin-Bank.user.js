@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Viettin Bank
 // @namespace    http://tampermonkey.net/
-// @version      9.8
+// @version      9.9
 // @description  Tối ưu hóa hiệu năng, sửa lỗi vòng lặp DOM và nâng cấp độ chính xác quét dữ liệu VietinBank điền vào Odoo.
 // @author       NGOCCHUNG
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Viettin-Bank.user.js
@@ -130,38 +130,39 @@
         let ketQua = { ngay: '', soTien: '', ref: '', fromAccount: '', toAccount: '', detail: '' };
         const textChuan = vanBan.replace(/\s+/g, ' ');
 
-        // Quét Ref
-        const mRef = textChuan.match(/(?:Số giao dịch|Transaction number).*?:\s*([A-Z0-9-]+)/i);
-        if (mRef) ketQua.ref = mRef[1].trim();
+        const mRef = textChuan.match(
+            /Transaction number[\s:]*([A-Z0-9-]{10,})/i
+        );
+
+        if (mRef) {
+            ketQua.ref = mRef[1].trim();
+        }
 
         // Quét Ngày
         const mNgay = textChuan.match(/(?:Ngày thực hiện|Transaction date).*?:\s*(\d{2}[-\/]\d{2}[-\/]\d{4})/i);
         if (mNgay) ketQua.ngay = mNgay[1].replace(/-/g, '/');
 
         // Quét Số tiền
-        let soTienQuetDuoc = "";
-        const boLocSoTien = [
-            /(?:Số tiền bằng số|Amount in figures).*?:\s*([\d,.]+)/i,
-            /(?:Số tiền|Amount).*?:\s*([\d,.]+)/i,
-            /([\d,.]+)\s*(?:VND|đ|USD)/i
-        ];
-        for (let i = 0; i < boLocSoTien.length; i++) {
-            let m = textChuan.match(boLocSoTien[i]);
-            if (m && m[1]) {
-                let chuoiSo = m[1].trim();
-                if (chuoiSo.endsWith('.') || chuoiSo.endsWith(',')) chuoiSo = chuoiSo.slice(0, -1);
-                if (chuoiSo.length > 2) {
-                    soTienQuetDuoc = chuoiSo;
-                    break;
-                }
+        const start = textChuan.search(/(?:Số tiền bằng số|Amount in figures)/i);
+
+        if (start !== -1) {
+
+            const block = textChuan.substring(start, start + 200);
+
+            const m = block.match(/[:\s]*([\d]{1,3}(?:,\d{3})*(?:\.\d+)?)/);
+
+            if (m) {
+                ketQua.soTien = m[1];
             }
         }
-        ketQua.soTien = soTienQuetDuoc;
 
         // BỘ QUÉT NỘI DUNG GIAO DỊCH (DETAIL) v9.8
         const boLocDetail = [
-            /(?:Nội dung|Remarks).*?:\s*(.*?)(?=(?:Kênh chuyển tiền|Channel|In từ dịch vụ|$))/i,
-            /(?:Nội dung|Remarks)\s*:\s*(.*?)$/i
+
+            /(?:Nội dung\s*Remarks|Nội dung|Remarks)[\s:]*([\s\S]*?)(?=\s*(?:Kênh chuyển tiền|Channel|In từ dịch vụ|Date printed|$))/i,
+
+            /(?:Remarks)[\s:]*([\s\S]*?)(?=\s*(?:Channel|Date printed|$))/i
+
         ];
         for (let i = 0; i < boLocDetail.length; i++) {
             let m = textChuan.match(boLocDetail[i]);
@@ -178,9 +179,13 @@
         if (viTriChia !== -1) {
             const doanNguon = textChuan.substring(0, viTriChia);
             const doanDich = textChuan.substring(viTriChia);
-            const mNguon = doanNguon.match(/(?:Số tài khoản|From account number).*?:\s*([0-9]+)/i);
+            const mNguon = doanNguon.match(
+                /From account number[\s:]*([0-9]{6,20})/i
+            );
             if (mNguon) ketQua.fromAccount = mNguon[1].trim();
-            const mDich = doanDich.match(/(?:Số tài khoản|To account number).*?:\s*([0-9]+)/i);
+            const mDich = doanDich.match(
+                /To account number[\s:]*([0-9]{6,20})/i
+            );
             if (mDich) ketQua.toAccount = mDich[1].trim();
         } else {
             const mNguon = textChuan.match(/(?:Số tài khoản|From account number).*?:\s*([0-9]+)/i);
