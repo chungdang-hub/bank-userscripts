@@ -168,15 +168,17 @@
                 if (mFromBackup) ketQua.fromAccount = "VND" + mFromBackup[0];
             }
 
-            // Quét tài khoản đích bằng mảng lọc trừ
-            const tatCaDaySo = [...textChuan.matchAll(/\b\d{8,15}\b/g)].map(m => m[0]);
+            // Quét tài khoản đích bằng mảng lọc trừ (SỬA LỖI: Bắt thêm tiền tố VND)
+            const tatCaDaySo = [...textChuan.matchAll(/\b(?:VND|VN)?[0-9]{8,15}\b/ig)].map(m => m[0].toUpperCase());
             let cácSoConLai = tatCaDaySo.filter(so => {
-                if (ketQua.fromAccount && ketQua.fromAccount.includes(so)) return false;
+                // Bỏ qua tài khoản nguồn (cắt chữ VND đi để so sánh cho chắc)
+                let sourceAcc = ketQua.fromAccount ? ketQua.fromAccount.toUpperCase().replace('VND', '') : '';
+                if (sourceAcc && so.includes(sourceAcc)) return false;
                 if (ketQua.soTien && so === ketQua.soTien) return false;
-                if (so.startsWith('202')) return false;
+                if (so.startsWith('202')) return false; // Loại số Ref
                 return true;
             });
-            if (cácSoConLai.length > 0) ketQua.toAccount = cácSoConLai[0];
+            if (cácSoConLai.length > 0) ketQua.toAccount = cácSoConLai[0].replace(/^(VND|VN)/i, '');
 
             // Quét diễn giải
             const mDetail = textChuan.match(/Payment Details\s+([\s\S]*?)\s*(?:Transaction Description|OBO Payer|Foreign Exchange|$)/i);
