@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Viettin Bank
 // @namespace    http://tampermonkey.net/
-// @version      9.9
+// @version      10.0
 // @description  Tối ưu hóa hiệu năng, sửa lỗi vòng lặp DOM và nâng cấp độ chính xác quét dữ liệu VietinBank điền vào Odoo.
 // @author       NGOCCHUNG
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Viettin-Bank.user.js
