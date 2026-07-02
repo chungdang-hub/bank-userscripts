@@ -317,6 +317,11 @@
                 if (ghiDuLieuVaoOdoo(timInputOdooTheoLabel('detail'), data.detail)) demForm++;
                 if (ghiDuLieuVaoOdoo(timInputOdooTheoLabel('from'), data.fromAccount)) demForm++;
                 if (ghiDuLieuVaoOdoo(timInputOdooTheoLabel('to'), data.toAccount)) demForm++;
+                if (data.toAccount == 115003048730) {
+                    ghiDuLieuVaoOdoo(
+                        timInputOdooTheoLabel('to'),
+                        data.toAccount + 'vnd'
+                    );}
 
                 if (demForm > 0) {
                     updateStatus(`🎉 TRỌN VẸN (${demForm}/6)`, "#9ece6a");
