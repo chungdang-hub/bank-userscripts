@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MBBank
 // @namespace    http://tampermonkey.net/
-// @version      12.4
+// @version      12.5
 // @author       NGOCCHUNG
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/MBBank
 // @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/MBBank
@@ -121,14 +121,14 @@
         } catch (e) { return false; }
     }
 
-    // 4. BỘ PHÂN TÍCH CHUỖI v12.4 (Sửa chính xác lỗi bắt nhầm chuỗi Detail dài)
+    // 4. BỘ PHÂN TÍCH CHUỖI v12.9 (Sửa lỗi bỏ sót mã định danh kép song song FN và PR)
     function trichXuatDuLieuMBBank(vanBan) {
         const ketQua = { ngay: '', soTien: '', ref: '', fromAccount: '', toAccount: '', detail: '' };
 
         // Chuẩn hóa chuỗi dữ liệu đầu vào
         const textChuan = vanBan.replace(/["\n\r]/g, ' ').replace(/\s{2,}/g, ' ');
 
-        // 1. Quét Mã GD (FT)
+        // 1. Quét Mã GD (FT) hoặc Số tham chiếu
         const mRef = textChuan.match(/(FT\d{14,})/i) || textChuan.match(/Số tham chiếu \(Ref\.No\):\s*(\d+)/i);
         if (mRef) ketQua.ref = mRef[1];
 
@@ -176,21 +176,35 @@
             }
         }
 
-        // 4. Quét Diễn giải v12.4 (Định vị chính xác mục tiêu đơn lẻ)
-        const mDetailChuan = textChuan.match(/(PR\d+\s+TT\s+.*?)(?=\s+\d{1,3}(?:,\d{3})+\s*VND)/i) ||
-                             textChuan.match(/(TT\s+Chiet\s+khau.*?)(?=\s+\d{1,3}(?:,\d{3})+\s*VND)/i);
+        // 4. Quét Diễn giải v12.9 (Cập nhật Regex thông minh quét cụm mã kép liên tục)
+        let extractedDetail = "";
 
-        if (mDetailChuan) {
-            ketQua.detail = mDetailChuan[1].trim();
+        // Ưu tiên 1: Cấu trúc chuẩn Farmlink
+        // Đã sửa đổi để nếu có cả đuôi .FN lẫn mã PR đi liền kề nhau thì sẽ hốt trọn vẹn không bị đứt đoạn
+        const mFarmlink = textChuan.match(/\b(Thanh\s+toan|TT|Tam\s+ung|Chuyen\s+tien|Chi\s+tien|Chi\s+tra)\b.{5,180}?\b(PR\d{4,}|[A-Z0-9_]+\.FN\b)(?:\s*[\s\-/]\s*(?:PR\d{4,}|[A-Z0-9_]+\.FN\b))*/i);
+
+        if (mFarmlink) {
+            extractedDetail = mFarmlink[0];
         } else {
-            // Fallback phòng hờ cho mẫu văn bản cũ dạng tự do
-            const mDetailKep = textChuan.match(/Diễn giải:\s*(?:,\s*)*(.*?)(?:Lập biểu|Kiểm soát|Chứng từ này)/i);
-            if (mDetailKep && mDetailKep[1].length < 250) {
-                ketQua.detail = mDetailKep[1].replace(/^[\s,]+|[\s,]+$/g, '').trim();
-            } else {
-                const mDetailCu = textChuan.match(/(TT\s.*?)(?=\d{1,3}(?:,\d{3})+\s*VND)/i);
-                if (mDetailCu) ketQua.detail = mDetailCu[1].trim();
+            // Ưu tiên 2: Tìm theo cụm từ "Nội dung (Details):"
+            const mNoidung = textChuan.match(/Nội\s+dung[^:]*:\s*(.*?)(?=\s*(?:Bằng\s+chữ|Bằng\s+số|Số\s+tiền|Người\s+tạo|Corporate|PHẦN\s+DÀNH|This\s+document|$))/i);
+            if (mNoidung) {
+                let bockhoinoidung = mNoidung[1];
+                const mSach = bockhoinoidung.match(/\b(Thanh\s+toan|TT|Chi\s+tien|Tam\s+ung|Chuyen\s+tien)\b.*/i);
+                if (mSach) {
+                    extractedDetail = mSach[0];
+                } else {
+                    extractedDetail = bockhoinoidung.slice(0, 150);
+                }
             }
+        }
+
+        // Làm sạch kết quả và cắt bỏ số tiền dính đuôi nếu có
+        if (extractedDetail) {
+            ketQua.detail = extractedDetail
+                .replace(/\s+/g, ' ')
+                .replace(/\s+[\d,]{5,}\s*$/, '') // Xóa số tiền dính đuôi nếu có
+                .trim();
         }
 
         return ketQua;
@@ -252,7 +266,7 @@
             <input type="file" id="v9-file-input" accept="application/pdf" style="display: none;" />
 
             <div id="v9-log" style="font-size: 10px; color: #a9b1d6; margin-top: 10px; max-height: 120px; overflow-y: auto; background: #051224; padding: 6px; border-radius: 4px; border: 1px solid #1c3d5a; line-height: 1.4;">
-                HỆ THỐNG v12.4: Sửa lỗi bóc tách chuỗi Diễn Giải chi tiết.
+                HỆ THỐNG v12.9: Đã sửa lỗi quét gom toàn bộ cụm mã kép (FN + PR) thành công!
             </div>
         `;
 
@@ -342,7 +356,6 @@
         if (el) { el.innerText = text; el.style.color = color; }
     }
 
-    // Ghi nhật ký hiển thị
     function logMessage(msg) {
         const el = document.getElementById('v9-log');
         if (el) { el.innerHTML += `<br/>${msg}`; el.scrollTop = el.scrollHeight; }
