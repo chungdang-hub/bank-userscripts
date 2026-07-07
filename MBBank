@@ -3,8 +3,8 @@
 // @namespace    http://tampermonkey.net/
 // @version      12.2
 // @author       NGOCCHUNG
-// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-VPbank.user.js
-// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-VPbank.user.js
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/MBBank
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/MBBank
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
 // @run-at       document-start
