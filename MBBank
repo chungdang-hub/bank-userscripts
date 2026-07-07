@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MBBank
 // @namespace    http://tampermonkey.net/
-// @version      12.2
+// @version      12.4
 // @author       NGOCCHUNG
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/MBBank
 // @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/MBBank
@@ -73,7 +73,6 @@
             if (chuoiLabel === 'ref' && (text === 'ref' || text === 'mã giao dịch' || text === 'mã ref' || text.includes('tham chiếu'))) khop = true;
             if (chuoiLabel === 'amount' && (text === 'amount' || text === 'số tiền')) khop = true;
             if (chuoiLabel === 'detail' && (text === 'detail' || text.includes('nội dung') || text.includes('ghi chú') || text === 'diễn giải')) khop = true;
-
             if (chuoiLabel === 'from' && (text.includes('from account') || text.includes('tài khoản nguồn') || text.includes('tài khoản đi')) && !text.includes('name') && !text.includes('tên')) khop = true;
             if (chuoiLabel === 'to' && (text.includes('to account') || text.includes('tài khoản đích') || text.includes('tài khoản đến')) && !text.includes('name') && !text.includes('tên')) khop = true;
 
@@ -122,58 +121,76 @@
         } catch (e) { return false; }
     }
 
-    // 4. BỘ PHÂN TÍCH CHUỖI v12.2 (Sửa lỗi bắt chuỗi chi tiết nội dung)
+    // 4. BỘ PHÂN TÍCH CHUỖI v12.4 (Sửa chính xác lỗi bắt nhầm chuỗi Detail dài)
     function trichXuatDuLieuMBBank(vanBan) {
         const ketQua = { ngay: '', soTien: '', ref: '', fromAccount: '', toAccount: '', detail: '' };
 
-        const textChuan = vanBan.replace(/\s+/g, ' ');
+        // Chuẩn hóa chuỗi dữ liệu đầu vào
+        const textChuan = vanBan.replace(/["\n\r]/g, ' ').replace(/\s{2,}/g, ' ');
 
-        // 1. Quét Mã bút toán (FT number) hoặc Số tham chiếu
+        // 1. Quét Mã GD (FT)
         const mRef = textChuan.match(/(FT\d{14,})/i) || textChuan.match(/Số tham chiếu \(Ref\.No\):\s*(\d+)/i);
-        if (mRef) {
-            ketQua.ref = mRef[1];
-        }
+        if (mRef) ketQua.ref = mRef[1];
 
-        // 2. Quét Ngày hạch toán / Ngày ký
+        // 2. Quét Ngày hạch toán
         const mNgayHeThong = textChuan.match(/Ngày giờ hoạch toán[^:]*:\s*(\d{2}\/\d{2}\/\d{4})/i);
         if (mNgayHeThong) {
             ketQua.ngay = mNgayHeThong[1];
         } else {
-            const mNgayKy = textChuan.match(/Ngay ky:\s*(\d{2}\/\d{2}\/\d{4})/i) || textChuan.match(/\b(\d{2}\/\d{2}\/\d{4})\b/);
-            if (mNgayKy) ketQua.ngay = mNgayKy[1];
+            const matchesNgay = [...textChuan.matchAll(/\b(\d{2}\/\d{2}\/\d{4})\b/g)];
+            if (matchesNgay.length > 0) {
+                ketQua.ngay = matchesNgay[0][1];
+            }
         }
 
-        const mSoTien =
-              textChuan.match(/(\d{1,3}(?:,\d{3})+)\s*VND/i);
+        // 3. Quét Số tiền & Tài khoản
+        const mTkNo = textChuan.match(/Tài khoản nợ:\s*(?:,\s*)*(\d+)\s*(?:,\s*)*([\d,]+)\s*(?:,\s*)*VND/i);
+        const mTkCo = textChuan.match(/Tài khoản có:\s*(?:,\s*)*(\d+)/i);
 
-        if (mSoTien) {
-            ketQua.soTien = mSoTien[1];
+        if (mTkNo && mTkCo) {
+            ketQua.fromAccount = mTkNo[1];
+            ketQua.soTien = mTkNo[2];
+            ketQua.toAccount = mTkCo[1];
+        } else {
+            const mSoTienCu = textChuan.match(/(\d{1,3}(?:,\d{3})+)\s*VND/i);
+            if (mSoTienCu) ketQua.soTien = mSoTienCu[1];
+
+            const dsTaiKhoan = [...textChuan.matchAll(/\b\d{8,15}\b/g)].map(m => m[0]);
+            const dsThucTe = [];
+            for (const so of dsTaiKhoan) {
+                if (so.length === 10 && so.startsWith('2026')) continue;
+                if (so.length === 10 && so.startsWith('03')) continue;
+                if (!dsThucTe.includes(so)) dsThucTe.push(so);
+            }
+
+            const DS_TK_CONG_TY = ["9776668888", "945689999"];
+            let tkCongTyTimThay = dsThucTe.find(tk => DS_TK_CONG_TY.includes(tk));
+
+            if (tkCongTyTimThay) {
+                ketQua.fromAccount = tkCongTyTimThay;
+                const tkDoiTac = dsThucTe.find(tk => tk !== tkCongTyTimThay);
+                if (tkDoiTac) ketQua.toAccount = tkDoiTac;
+            } else if (dsThucTe.length >= 2) {
+                ketQua.fromAccount = dsThucTe[0];
+                ketQua.toAccount = dsThucTe[1];
+            }
         }
 
-        const mDetail = textChuan.match(/(TT\s.*?)(?=\d{1,3}(?:,\d{3})+\s*VND)/i);
+        // 4. Quét Diễn giải v12.4 (Định vị chính xác mục tiêu đơn lẻ)
+        const mDetailChuan = textChuan.match(/(PR\d+\s+TT\s+.*?)(?=\s+\d{1,3}(?:,\d{3})+\s*VND)/i) ||
+                             textChuan.match(/(TT\s+Chiet\s+khau.*?)(?=\s+\d{1,3}(?:,\d{3})+\s*VND)/i);
 
-        if (mDetail) {
-            ketQua.detail = mDetail[1].trim();
-        }
-
-        // 5. Phân bổ tài khoản (Nguồn & Đích)
-        const dsTaiKhoan = [...textChuan.matchAll(/\b\d{8,15}\b/g)].map(m => m[0]);
-        const dsThucTe = [];
-        for (const so of dsTaiKhoan) {
-            if (so.length === 10 && so.startsWith('2026')) continue;
-            if (!dsThucTe.includes(so)) dsThucTe.push(so);
-        }
-
-        const DS_TK_CONG_TY = ["9776668888"];
-        let tkCongTyTimThay = dsThucTe.find(tk => DS_TK_CONG_TY.includes(tk));
-
-        if (tkCongTyTimThay) {
-            ketQua.fromAccount = tkCongTyTimThay;
-            const tkDoiTac = dsThucTe.find(tk => tk !== tkCongTyTimThay);
-            if (tkDoiTac) ketQua.toAccount = tkDoiTac;
-        } else if (dsThucTe.length >= 2) {
-            ketQua.fromAccount = dsThucTe[0];
-            ketQua.toAccount = dsThucTe[1];
+        if (mDetailChuan) {
+            ketQua.detail = mDetailChuan[1].trim();
+        } else {
+            // Fallback phòng hờ cho mẫu văn bản cũ dạng tự do
+            const mDetailKep = textChuan.match(/Diễn giải:\s*(?:,\s*)*(.*?)(?:Lập biểu|Kiểm soát|Chứng từ này)/i);
+            if (mDetailKep && mDetailKep[1].length < 250) {
+                ketQua.detail = mDetailKep[1].replace(/^[\s,]+|[\s,]+$/g, '').trim();
+            } else {
+                const mDetailCu = textChuan.match(/(TT\s.*?)(?=\d{1,3}(?:,\d{3})+\s*VND)/i);
+                if (mDetailCu) ketQua.detail = mDetailCu[1].trim();
+            }
         }
 
         return ketQua;
@@ -235,7 +252,7 @@
             <input type="file" id="v9-file-input" accept="application/pdf" style="display: none;" />
 
             <div id="v9-log" style="font-size: 10px; color: #a9b1d6; margin-top: 10px; max-height: 120px; overflow-y: auto; background: #051224; padding: 6px; border-radius: 4px; border: 1px solid #1c3d5a; line-height: 1.4;">
-                HỆ THỐNG v12.2: Đã tối ưu quét nội dung có ký tự đặc biệt.
+                HỆ THỐNG v12.4: Sửa lỗi bóc tách chuỗi Diễn Giải chi tiết.
             </div>
         `;
 
@@ -325,6 +342,7 @@
         if (el) { el.innerText = text; el.style.color = color; }
     }
 
+    // Ghi nhật ký hiển thị
     function logMessage(msg) {
         const el = document.getElementById('v9-log');
         if (el) { el.innerHTML += `<br/>${msg}`; el.scrollTop = el.scrollHeight; }
@@ -340,7 +358,6 @@
         uiObserver.observe(document.documentElement, { childList: true, subtree: true });
     }
 
-    // Khởi chạy
     if (document.body) veBangDieuKhien();
     else document.addEventListener('DOMContentLoaded', veBangDieuKhien);
 
