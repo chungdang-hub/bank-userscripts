@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Standard Chartered
 // @namespace    http://tampermonkey.net/
-// @version      14.3
+// @version      14.4
 // @description  Phiên bản update
 // @author       NGOCCHUNG
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Standard-Chartered.user.js
@@ -216,7 +216,7 @@
             }
 
             // Quét tài khoản chuyển (From Account) - Né số Ref dạng 202
-            const tatCaSo = [...textChuan.matchAll(/\b(\d{4,14})\b/g)].map(m => m[1]);
+            const tatCaSo = [...textChuan.matchAll(/\b(\d{4,15})\b/g)].map(m => m[1]);
             if (tatCaSo.length > 0) {
                 let tkNguon = tatCaSo.find(so => !so.startsWith('202'));
                 if (tkNguon) ketQua.fromAccount = tkNguon;
