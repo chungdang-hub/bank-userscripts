@@ -3,8 +3,8 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @description  Hỗ trợ xử lý PDF Phiếu hạch toán Vietcombank & Tối ưu hiệu năng DOM
-// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-Vietcombank
-// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-Vietcombank
+// @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-VCB
+// @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Bao-No-VCB
 // @author       NGOCCHUNG
 // @match        *://farmlink.techcoop.vn/*
 // @grant        none
