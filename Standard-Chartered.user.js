@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Standard Chartered
 // @namespace    http://tampermonkey.net/
-// @version      14.4
-// @description  Phiên bản update
+// @version      14.5
+// @description  Phiên bản update hỗ trợ kéo thả dashboard
 // @author       NGOCCHUNG
 // @downloadURL  https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Standard-Chartered.user.js
 // @updateURL    https://raw.githubusercontent.com/chungdang-hub/bank-userscripts/main/Standard-Chartered.user.js
@@ -181,13 +181,20 @@
             });
             if (cácSoConLai.length > 0) ketQua.toAccount = cácSoConLai[0].replace(/^(VND|VN)/i, '');
 
-            // Quét diễn giải
-            const mDetail = textChuan.match(/Payment Details\s+([\s\S]*?)\s*(?:Transaction Description|OBO Payer|Foreign Exchange|$)/i);
-            if (mDetail && mDetail[1].trim()) {
-                ketQua.detail = mDetail[1].trim();
+            // Quét diễn giải (Đã nâng cấp để xử lý form Debit Advice mới của SCB)
+            let mDetailFX = textChuan.match(/Foreign Exchange\s*\(FX\)\s*Details\s+([\s\S]*?)(?=\s*(?:PI\d+[A-Z0-9]+|SE\d{8,}|UETR|OBO Payer|New General))/i);
+
+            if (mDetailFX && mDetailFX[1].trim() && !mDetailFX[1].includes("Currency/Amount")) {
+                ketQua.detail = mDetailFX[1].trim().replace(/\uFFFD/g, '-');
             } else {
-                const mThanhToan = textChuan.match(/(Thanh toan cho[\s\S]*?)(?:Transaction Description|OBO Payer|Foreign Exchange|$)/i);
-                if (mThanhToan) ketQua.detail = mThanhToan[1].trim();
+                let mUuTien = textChuan.match(/(?:TT CHO|THANH TOAN)[\s\S]*?(?=\s*(?:PI\d+[A-Z0-9]+|SE\d{8,}|UETR|OBO Payer|New General|$))/i);
+                if (mUuTien) {
+                    ketQua.detail = mUuTien[0].trim().replace(/\uFFFD/g, '-');
+                } else {
+                    // Dự phòng gốc (form cũ)
+                    const mDetail = textChuan.match(/Payment Details\s+([\s\S]*?)\s*(?:Transaction|OBO Payer|Foreign Exchange|$)/i);
+                    if (mDetail) ketQua.detail = mDetail[1].trim();
+                }
             }
 
             // Quét Ref
@@ -249,7 +256,60 @@
         });
     }
 
-    // 6. KHỞI TẠO GIAO DIỆN HỢP NHẤT
+    // 6. HÀM XỬ LÝ KÉO THẢ DASHBOARD CƠ BẢN
+    function khienDashboardKeoThaDuoc(el) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+        // Thêm biểu tượng con trỏ di chuyển (move cursor) cho phần tiêu đề
+        const tieuDe = el.querySelector('div');
+        if (tieuDe) tieuDe.style.cursor = 'move';
+        el.style.cursor = 'grab';
+
+        el.onmousedown = dragMouseDown;
+
+        function dragMouseDown(e) {
+            e = e || window.event;
+            // Nếu click trúng nút bấm, input hoặc hộp log chat thì không kích hoạt kéo thả
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.id === 'v9-log') {
+                return;
+            }
+            e.preventDefault();
+            el.style.cursor = 'grabbing';
+
+            // Lấy vị trí cố định hiện tại theo pixel thực tế trên màn hình
+            const rect = el.getBoundingClientRect();
+            el.style.top = rect.top + 'px';
+            el.style.left = rect.left + 'px';
+            el.style.right = 'auto'; // Hủy neo bên phải (right: 20px ban đầu)
+
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+
+            // Tính toán tọa độ mới
+            el.style.top = (el.offsetTop - pos2) + "px";
+            el.style.left = (el.offsetLeft - pos1) + "px";
+        }
+
+        function closeDragElement() {
+            el.style.cursor = 'grab';
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }
+
+    // 7. KHỞI TẠO GIAO DIỆN HỢP NHẤT
     function veBangDieuKhien() {
         if (document.getElementById('odoo-autofill-v9')) return;
 
@@ -260,6 +320,7 @@
             background: #1a1b26; color: #a9b1d6; padding: 15px;
             border-radius: 8px; width: 260px; font-family: sans-serif;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid #ff9e64;
+            user-select: none;
         `;
 
         container.innerHTML = `
@@ -279,12 +340,16 @@
             </button>
             <input type="file" id="v9-file-input" accept="application/pdf" style="display: none;" />
 
-            <div id="v9-log" style="font-size: 10px; color: #a9b1d6; margin-top: 10px; max-height: 140px; overflow-y: auto; background: #10101a; padding: 6px; border-radius: 4px; border: 1px solid #24283b; line-height: 1.4;">
-                HỆ THỐNG v14.0: Tích hợp lõi kép AI-Parser, tự phân tách luồng dữ liệu thông minh.
+            <div id="v9-log" style="font-size: 10px; color: #a9b1d6; margin-top: 10px; max-height: 140px; overflow-y: auto; background: #10101a; padding: 6px; border-radius: 4px; border: 1px solid #24283b; line-height: 1.4; user-select: text;">
+                HỆ THỐNG v14.5: Tích hợp lõi kép AI-Parser, tự phân tách luồng dữ liệu thông minh. Hỗ trợ kéo thả giao diện.
             </div>
         `;
 
         document.body.appendChild(container);
+
+        // Kích hoạt tính năng kéo thả cho Dashboard vừa tạo
+        khienDashboardKeoThaDuoc(container);
+
         injectPdfEngine();
 
         document.getElementById('v9-btn-test').addEventListener('click', function() {
